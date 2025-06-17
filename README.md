@@ -1,3 +1,3 @@
-# nasa_app
+# NASA App
 
-A new Flutter project.
+Flutter App for discovering our galaxy using NASA free API's
