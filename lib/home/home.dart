@@ -29,7 +29,11 @@ class HomeScreen extends StatelessWidget {
                 child: Container(
                   padding: EdgeInsets.all(10),
                   decoration: BoxDecoration(
-                    border: Border.all(color: Colors.white70),
+                    border: Border.all(
+                      color: TextTheme.of(
+                        context,
+                      ).bodySmall!.color!.withValues(alpha: .5),
+                    ),
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Column(
@@ -41,7 +45,11 @@ class HomeScreen extends StatelessWidget {
                       ),
                       Text(
                         item.subTitle,
-                        style: TextStyle(color: Colors.white70),
+                        style: TextStyle(
+                          color: TextTheme.of(
+                            context,
+                          ).bodySmall!.color!.withValues(alpha: .8),
+                        ),
                       ),
                     ],
                   ),
