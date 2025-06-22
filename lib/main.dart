@@ -22,7 +22,7 @@ class MainApp extends StatelessWidget {
         home: HomeScreen(),
         // home: ADOPScreen(),
         darkTheme: ThemeData.dark(),
-        themeMode: ThemeMode.light,
+        themeMode: ThemeMode.dark,
         routes: {"/adop": (context) => ADOPScreen()},
       ),
     );

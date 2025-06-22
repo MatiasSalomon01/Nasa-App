@@ -25,17 +25,22 @@ class _ADOPScreenState extends State<ADOPScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text('Astronomy Picture of the Day')),
-      body: SingleChildScrollView(
-        child: Center(
-          child: Container(
-            constraints: BoxConstraints(maxWidth: 1200),
-            padding: EdgeInsets.symmetric(horizontal: 15),
-            child: Consumer<ADOPProvider>(
-              builder: (context, provider, child) {
-                bool isLoading = provider.isLoading || provider.adop == null;
-                return Column(
+    return Consumer<ADOPProvider>(
+      builder: (context, provider, child) {
+        bool isLoading = provider.isLoading || provider.adop == null;
+        return Scaffold(
+          appBar: AppBar(
+            title: Text(
+              'Astronomy Picture of the Day ${provider.date ?? ''}',
+              style: TextStyle(fontSize: 18),
+            ),
+          ),
+          body: SingleChildScrollView(
+            child: Center(
+              child: Container(
+                constraints: BoxConstraints(maxWidth: 1200),
+                padding: EdgeInsets.symmetric(horizontal: 15),
+                child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     AspectRatio(
@@ -93,28 +98,28 @@ class _ADOPScreenState extends State<ADOPScreen> {
                           ),
                     SizedBox(height: 20),
                   ],
-                );
-              },
+                ),
+              ),
             ),
           ),
-        ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () async {
-          var date = await showDatePicker(
-            context: context,
-            firstDate: DateTime(1995, 6, 16),
-            lastDate: DateTime.now(),
-          );
+          floatingActionButton: FloatingActionButton(
+            onPressed: () async {
+              var date = await showDatePicker(
+                context: context,
+                firstDate: DateTime(1995, 6, 16),
+                lastDate: DateTime.now(),
+              );
 
-          if (date != null) {
-            context.read<ADOPProvider>().getPicture(
-              date: date.toString().split(' ').first,
-            );
-          }
-        },
-        child: Icon(Icons.calendar_month),
-      ),
+              if (date != null) {
+                context.read<ADOPProvider>().getPicture(
+                  date: date.toString().split(' ').first,
+                );
+              }
+            },
+            child: Icon(Icons.calendar_month),
+          ),
+        );
+      },
     );
   }
 }

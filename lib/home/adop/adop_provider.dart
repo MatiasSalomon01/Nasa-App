@@ -9,8 +9,11 @@ class ADOPProvider extends ChangeNotifier {
 
   bool isLoading = false;
 
+  String? date;
+
   Future getPicture({String? date}) async {
     isLoading = true;
+    this.date = date;
     notifyListeners();
 
     var parameters = {'api_key': dotenv.get('NASA_API_KEY')};
