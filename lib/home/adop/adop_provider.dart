@@ -26,7 +26,7 @@ class ADOPProvider extends ChangeNotifier {
 
     var response = await http.get(url);
 
-    print(response.body);
+    debugPrint(response.body);
 
     adop = ADOPResponse.fromRawJson(response.body);
     isLoading = false;
@@ -63,7 +63,7 @@ class ADOPResponse {
       ADOPResponse.fromJson(json.decode(str));
 
   factory ADOPResponse.fromJson(Map<String, dynamic> json) => ADOPResponse(
-    copyright: json["copyright"],
+    copyright: json["copyright"]?.toString().replaceAll('\n', ''),
     date: DateTime.parse(json["date"]),
     explanation: json["explanation"],
     hdurl: json["hdurl"],

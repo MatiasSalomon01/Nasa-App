@@ -1,4 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:nasa_app/home/adop/adop_provider.dart';
 import 'package:nasa_app/widgets/dynamic_shimmer.dart';
@@ -60,6 +61,8 @@ class _ADOPScreenState extends State<ADOPScreen> {
                               },
                               child: CachedNetworkImage(
                                 imageUrl: provider.adop!.url,
+                                placeholder: (context, url) =>
+                                    Center(child: CircularProgressIndicator()),
                               ),
                             ),
                     ),
@@ -76,10 +79,7 @@ class _ADOPScreenState extends State<ADOPScreen> {
                     SizedBox(height: 10),
                     isLoading
                         ? DynamicShimmer(height: 400)
-                        : Text(
-                            provider.adop!.explanation,
-                            textAlign: TextAlign.justify,
-                          ),
+                        : Text(provider.adop!.explanation),
                     SizedBox(height: 20),
                     isLoading
                         ? DynamicShimmer(height: 14, width: 100)
@@ -87,7 +87,7 @@ class _ADOPScreenState extends State<ADOPScreen> {
                             TextSpan(
                               children: [
                                 TextSpan(
-                                  text: 'Author: ',
+                                  text: 'Copyright: ',
                                   style: TextStyle(fontWeight: FontWeight.bold),
                                 ),
                                 TextSpan(
@@ -96,7 +96,7 @@ class _ADOPScreenState extends State<ADOPScreen> {
                               ],
                             ),
                           ),
-                    SizedBox(height: 20),
+                    SizedBox(height: 60),
                   ],
                 ),
               ),
