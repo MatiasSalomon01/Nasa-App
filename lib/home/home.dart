@@ -77,19 +77,9 @@ class MenuItem {
       screen: '/adop',
     ),
     MenuItem(
-      title: 'ADOP',
-      subTitle: 'Astronomy Picture of the Day',
-      screen: '/adop',
-    ),
-    MenuItem(
-      title: 'ADOP',
-      subTitle: 'Astronomy Picture of the Day',
-      screen: '/adop',
-    ),
-    MenuItem(
-      title: 'ADOP',
-      subTitle: 'Astronomy Picture of the Day',
-      screen: '/adop',
+      title: 'EPIC',
+      subTitle: 'Earth Polychromatic Imaging Camera',
+      screen: '/epic',
     ),
   ];
 }
