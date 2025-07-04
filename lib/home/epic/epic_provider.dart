@@ -44,6 +44,7 @@ class EPICProvider extends ChangeNotifier {
   }
 
   Future getPictures({DateTime? datetime}) async {
+    if (epics.isNotEmpty && datetime == null) return;
     isLoading = true;
     notifyListeners();
 

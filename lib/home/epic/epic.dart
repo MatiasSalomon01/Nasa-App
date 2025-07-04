@@ -4,8 +4,10 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:nasa_app/home/epic/epic_provider.dart';
+import 'package:nasa_app/home/epic/epic_response.dart';
 import 'package:nasa_app/widgets/dynamic_shimmer.dart';
 import 'package:provider/provider.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 
 class EPICScreen extends StatefulWidget {
   const EPICScreen({super.key});
@@ -29,7 +31,7 @@ class _EPICScreenState extends State<EPICScreen> {
 
   double dragOffset = 0;
 
-  final double threshold = 50;
+  final double threshold = 30;
 
   final formato = NumberFormat("#,###", "es_ES");
 
@@ -37,75 +39,126 @@ class _EPICScreenState extends State<EPICScreen> {
   Widget build(BuildContext context) {
     return Consumer<EPICProvider>(
       builder: (context, provider, child) {
-        var epic = provider.epics[currentIndex];
-        var earthDistance = sqrt(
-          pow(epic.dscovrJ2000Position.x, 2) +
-              pow(epic.dscovrJ2000Position.y, 2) +
-              pow(epic.dscovrJ2000Position.z, 2),
-        );
-        var sunDistance = sqrt(
-          pow(epic.sunJ2000Position.x, 2) +
-              pow(epic.sunJ2000Position.y, 2) +
-              pow(epic.sunJ2000Position.z, 2),
-        );
-        var moonDistance = sqrt(
-          pow(epic.lunarJ2000Position.x, 2) +
-              pow(epic.lunarJ2000Position.y, 2) +
-              pow(epic.lunarJ2000Position.z, 2),
-        );
+        double earthDistance = 0;
+        double sunDistance = 0;
+        double moonDistance = 0;
+
+        EPICResponse? epic;
+
+        if (provider.epics.isNotEmpty) {
+          epic = provider.epics[currentIndex];
+
+          earthDistance = sqrt(
+            pow(epic.dscovrJ2000Position.x, 2) +
+                pow(epic.dscovrJ2000Position.y, 2) +
+                pow(epic.dscovrJ2000Position.z, 2),
+          );
+          sunDistance = sqrt(
+            pow(epic.sunJ2000Position.x, 2) +
+                pow(epic.sunJ2000Position.y, 2) +
+                pow(epic.sunJ2000Position.z, 2),
+          );
+          moonDistance = sqrt(
+            pow(epic.lunarJ2000Position.x, 2) +
+                pow(epic.lunarJ2000Position.y, 2) +
+                pow(epic.lunarJ2000Position.z, 2),
+          );
+        }
         return Scaffold(
           appBar: AppBar(),
-          body: GestureDetector(
-            onHorizontalDragUpdate: (details) {
-              dragOffset += details.delta.dx;
+          body: Skeletonizer(
+            enabled: provider.isLoading,
+            child: GestureDetector(
+              onHorizontalDragUpdate: (details) {
+                dragOffset += details.delta.dx;
 
-              if (dragOffset > threshold) {
-                setState(
-                  () => currentIndex =
-                      (currentIndex + 1 + provider.epics.length) %
-                      provider.epics.length,
-                );
-                dragOffset = 0;
-              } else if (dragOffset < -threshold) {
-                setState(() {
-                  currentIndex = (currentIndex - 1) % provider.epics.length;
+                if (dragOffset > threshold) {
+                  setState(
+                    () => currentIndex =
+                        (currentIndex + 1 + provider.epics.length) %
+                        provider.epics.length,
+                  );
                   dragOffset = 0;
-                });
-              }
-            },
-            onHorizontalDragEnd: (details) => setState(() => dragOffset = 0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Align(
-                  alignment: Alignment.topCenter,
-                  child: Container(
-                    child: provider.epics.isEmpty || provider.isLoading
-                        ? DynamicShimmer(height: 390)
-                        : CachedNetworkImage(
-                            imageUrl: epic.imageUrl,
-                            fadeInDuration: Duration.zero,
-                            fadeOutDuration: Duration.zero,
-                            useOldImageOnUrlChange: true,
-                            placeholder: (context, url) =>
-                                DynamicShimmer(height: 390),
+                } else if (dragOffset < -threshold) {
+                  setState(() {
+                    currentIndex = (currentIndex - 1) % provider.epics.length;
+                    dragOffset = 0;
+                  });
+                }
+              },
+              onHorizontalDragEnd: (details) => setState(() => dragOffset = 0),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 15,
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Align(
+                      alignment: Alignment.topCenter,
+                      child: epic == null
+                          ? Placeholder()
+                          : CachedNetworkImage(
+                              imageUrl: epic.imageUrl,
+                              fadeInDuration: Duration.zero,
+                              fadeOutDuration: Duration.zero,
+                              useOldImageOnUrlChange: true,
+                              placeholder: (context, url) =>
+                                  DynamicShimmer(height: 390),
+                            ),
+                    ),
+                    SizedBox(height: 15),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text.rich(
+                          TextSpan(
+                            style: TextTheme.of(
+                              context,
+                            ).bodyLarge?.copyWith(fontWeight: FontWeight.bold),
+                            children: [
+                              TextSpan(text: 'Distance to Earth: '),
+                              TextSpan(
+                                text: '${formato.format(earthDistance)} km',
+                                style: TextStyle(fontWeight: FontWeight.normal),
+                              ),
+                            ],
                           ),
-                  ),
+                        ),
+                        Text.rich(
+                          TextSpan(
+                            style: TextTheme.of(
+                              context,
+                            ).bodyLarge?.copyWith(fontWeight: FontWeight.bold),
+                            children: [
+                              TextSpan(text: 'Distance to the Moon: '),
+                              TextSpan(
+                                text: '${formato.format(moonDistance)} km',
+                                style: TextStyle(fontWeight: FontWeight.normal),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Text.rich(
+                          TextSpan(
+                            style: TextTheme.of(
+                              context,
+                            ).bodyLarge?.copyWith(fontWeight: FontWeight.bold),
+                            children: [
+                              TextSpan(text: 'Sun to Earth: '),
+                              TextSpan(
+                                text: '${formato.format(sunDistance)} km',
+                                style: TextStyle(fontWeight: FontWeight.normal),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
-
-                Text(
-                  'Distance to Earth: ${formato.format(earthDistance)} km',
-                  style: TextTheme.of(context).titleLarge,
-                ),
-                Text(
-                  'Distance to the Moon: ${formato.format(moonDistance)} km',
-                  style: TextTheme.of(context).titleLarge,
-                ),
-                Text(
-                  'Sun to Earth: ${formato.format(sunDistance)} km',
-                  style: TextTheme.of(context).titleLarge,
-                ),
-              ],
+              ),
             ),
           ),
 

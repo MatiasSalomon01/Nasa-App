@@ -27,7 +27,7 @@ class MainApp extends StatelessWidget {
         home: HomeScreen(),
         // home: ADOPScreen(),
         darkTheme: ThemeData.dark(),
-        themeMode: ThemeMode.system,
+        themeMode: ThemeMode.dark,
         routes: {
           "/adop": (context) => ADOPScreen(),
           "/epic": (context) => EPICScreen(),
