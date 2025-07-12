@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'package:nasa_app/extensions/datetime.dart';
@@ -10,7 +11,7 @@ class EPICProvider extends ChangeNotifier {
   List<EPICResponse> epics = [];
   List<DateTime> allowedDates = [];
 
-  bool isLoading = false;
+  bool? isLoading;
 
   String? error;
 
@@ -38,6 +39,8 @@ class EPICProvider extends ChangeNotifier {
       debugPrint(response.body);
     }
 
+    allowedDates.sort();
+
     debugPrint(
       'Peticiones restantes: ${response.headers['x-ratelimit-remaining']}',
     );
@@ -50,9 +53,7 @@ class EPICProvider extends ChangeNotifier {
 
     var parameters = {'api_key': dotenv.get('NASA_API_KEY')};
 
-    var date =
-        datetime?.toDateQuery() ??
-        (DateTime.now().subtract(Duration(days: 1))).toDateQuery();
+    var date = datetime?.toDateQuery() ?? allowedDates.last.toDateQuery();
 
     var url = Uri.https(
       'api.nasa.gov',
@@ -70,8 +71,11 @@ class EPICProvider extends ChangeNotifier {
         var model = EPICResponse.fromJson(map);
         x.add(model);
       }
+
       epics = x;
       error = null;
+
+      await precacheImages(epics.map((e) => e.imageUrl).toList());
     } else {
       debugPrint(response.body);
       error =
@@ -85,5 +89,26 @@ class EPICProvider extends ChangeNotifier {
     debugPrint(
       'Peticiones restantes: ${response.headers['x-ratelimit-remaining']}',
     );
+  }
+
+  Future precacheImages(List<String> imageUrls) async {
+    final cacheManager = DefaultCacheManager();
+
+    final urlsNoEnCache = <String>[];
+
+    await Future.forEach(imageUrls, (String url) async {
+      final fileInfo = await cacheManager.getFileFromCache(url);
+      if (fileInfo == null) {
+        urlsNoEnCache.add(url);
+      }
+    });
+
+    if (urlsNoEnCache.isNotEmpty) {
+      debugPrint('Descargando ${urlsNoEnCache.length} imágenes no cacheadas.');
+
+      await Future.wait(
+        urlsNoEnCache.map((url) => cacheManager.downloadFile(url)),
+      );
+    }
   }
 }

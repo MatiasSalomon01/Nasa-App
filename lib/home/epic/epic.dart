@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:nasa_app/extensions/datetime.dart';
 import 'package:nasa_app/home/epic/epic_provider.dart';
 import 'package:nasa_app/home/epic/epic_response.dart';
 import 'package:nasa_app/widgets/dynamic_shimmer.dart';
@@ -21,8 +22,8 @@ class _EPICScreenState extends State<EPICScreen> {
   void initState() {
     super.initState();
 
-    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
-      context.read<EPICProvider>().getAllowedDates();
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
+      await context.read<EPICProvider>().getAllowedDates();
       context.read<EPICProvider>().getPictures();
     });
   }
@@ -65,53 +66,53 @@ class _EPICScreenState extends State<EPICScreen> {
           );
         }
         return Scaffold(
-          appBar: AppBar(),
+          appBar: AppBar(backgroundColor: Colors.transparent),
+          extendBodyBehindAppBar: true,
           body: Skeletonizer(
-            enabled: provider.isLoading,
+            enabled: provider.isLoading ?? true,
             child: GestureDetector(
-              onHorizontalDragUpdate: (details) {
-                dragOffset += details.delta.dx;
-
-                if (dragOffset > threshold) {
-                  setState(
-                    () => currentIndex =
-                        (currentIndex + 1 + provider.epics.length) %
-                        provider.epics.length,
-                  );
-                  dragOffset = 0;
-                } else if (dragOffset < -threshold) {
-                  setState(() {
-                    currentIndex = (currentIndex - 1) % provider.epics.length;
-                    dragOffset = 0;
-                  });
-                }
-              },
+              onHorizontalDragUpdate: (details) =>
+                  onHorizontalDragUpdate(details, provider),
               onHorizontalDragEnd: (details) => setState(() => dragOffset = 0),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 15,
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Align(
-                      alignment: Alignment.topCenter,
-                      child: epic == null
-                          ? Placeholder()
-                          : CachedNetworkImage(
-                              imageUrl: epic.imageUrl,
-                              fadeInDuration: Duration.zero,
-                              fadeOutDuration: Duration.zero,
-                              useOldImageOnUrlChange: true,
-                              placeholder: (context, url) =>
-                                  DynamicShimmer(height: 390),
-                            ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Align(
+                    alignment: Alignment.topCenter,
+                    child: epic == null
+                        ? DynamicShimmer(height: 390)
+                        : CachedNetworkImage(
+                            imageUrl: epic.imageUrl,
+                            fadeInDuration: Duration.zero,
+                            fadeOutDuration: Duration.zero,
+                            useOldImageOnUrlChange: true,
+                            placeholder: (context, url) =>
+                                DynamicShimmer(height: 390),
+                          ),
+                  ),
+                  // SizedBox(height: 15),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 15,
                     ),
-                    SizedBox(height: 15),
-                    Column(
+                    child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        Text.rich(
+                          TextSpan(
+                            style: TextTheme.of(
+                              context,
+                            ).bodyLarge?.copyWith(fontWeight: FontWeight.bold),
+                            children: [
+                              TextSpan(text: 'Date: '),
+                              TextSpan(
+                                text: '${epic?.date.toView()}',
+                                style: TextStyle(fontWeight: FontWeight.normal),
+                              ),
+                            ],
+                          ),
+                        ),
                         Text.rich(
                           TextSpan(
                             style: TextTheme.of(
@@ -156,8 +157,8 @@ class _EPICScreenState extends State<EPICScreen> {
                         ),
                       ],
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
           ),
@@ -182,5 +183,25 @@ class _EPICScreenState extends State<EPICScreen> {
         );
       },
     );
+  }
+
+  void onHorizontalDragUpdate(
+    DragUpdateDetails details,
+    EPICProvider provider,
+  ) {
+    dragOffset += details.delta.dx;
+
+    if (dragOffset > threshold) {
+      setState(
+        () => currentIndex =
+            (currentIndex + 1 + provider.epics.length) % provider.epics.length,
+      );
+      dragOffset = 0;
+    } else if (dragOffset < -threshold) {
+      setState(() {
+        currentIndex = (currentIndex - 1) % provider.epics.length;
+        dragOffset = 0;
+      });
+    }
   }
 }

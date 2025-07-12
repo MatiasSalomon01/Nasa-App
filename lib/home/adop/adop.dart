@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:nasa_app/home/adop/adop_provider.dart';
+import 'package:nasa_app/widgets/dynamic_shimmer.dart';
 import 'package:provider/provider.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
@@ -45,22 +46,25 @@ class _ADOPScreenState extends State<ADOPScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       AspectRatio(
-                        aspectRatio: 16 / 9,
+                        aspectRatio: 16 / 12,
                         child: GestureDetector(
                           onTap: () {
-                            showAdaptiveDialog(
+                            showDialog(
                               context: context,
                               builder: (context) {
-                                return provider.adop == null
-                                    ? Placeholder()
-                                    : CachedNetworkImage(
-                                        imageUrl: provider.adop!.url,
-                                      );
+                                return Dialog(
+                                  insetPadding: EdgeInsets.zero,
+                                  child: provider.adop == null
+                                      ? Placeholder()
+                                      : CachedNetworkImage(
+                                          imageUrl: provider.adop!.url,
+                                        ),
+                                );
                               },
                             );
                           },
                           child: provider.adop == null
-                              ? Placeholder()
+                              ? DynamicShimmer()
                               : CachedNetworkImage(
                                   imageUrl: provider.adop!.url,
                                   placeholder: (context, url) => Center(
